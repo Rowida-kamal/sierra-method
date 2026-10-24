@@ -465,4 +465,20 @@ description <https://fireforce6.github.io/mission-control/system-analysis/masses
     ref instance components:GPSProcessor : component:PhysicalPart [
         component:mass 0.2^^si:kg
     ]
+
+    ref instance components:HotspotDetector : component:PhysicalPart [
+        component:mass 0.15^^si:kg
+    ]
+
+    ref instance components:FireGeolocator : component:PhysicalPart [
+        component:mass 0.1^^si:kg
+    ]
+
+    ref instance components:AlertPacketBuilder : component:PhysicalPart [
+        component:mass 0.1^^si:kg
+    ]
+
+    ref instance components:FireEventBuffer : component:PhysicalPart [
+        component:mass 0.1^^si:kg
+    ]
 }

@@ -886,4 +886,34 @@ description <https://fireforce6.github.io/mission-control/system-analysis/compon
     instance FireSat : component:Component [
         base:description "FireSat Spacecraft"
     ]
-}
+
+    @dc:description "Onboard unit that finds, locates and reports wildfire hotspots in the payload imagery."
+    instance FireDetectionUnit : component:Component [
+        base:description "Onboard Wildfire Detection Unit"
+        base:isContainedBy PayloadProcessor
+    ]
+
+    @dc:description "Flags candidate fire hotspots in processed MWIR imagery."
+    instance HotspotDetector : component:Component [
+        base:description "FPGA Hotspot Detection Logic"
+        base:isContainedBy FireDetectionUnit
+    ]
+
+    @dc:description "Converts detected hotspot pixels into ground coordinates using spacecraft position."
+    instance FireGeolocator : component:Component [
+        base:description "Hotspot Geolocation Engine"
+        base:isContainedBy FireDetectionUnit
+    ]
+
+    @dc:description "Packs located detections into fire alert packets for downlink to Mission Control."
+    instance AlertPacketBuilder : component:Component [
+        base:description "Fire Alert Packet Formatter"
+        base:isContainedBy FireDetectionUnit
+    ]
+
+    @dc:description "Holds recent detections until Mission Control acknowledges them."
+    instance FireEventBuffer : component:Component [
+        base:description "Fire Event Buffer Memory - 512MB"
+        base:isContainedBy FireDetectionUnit
+    ]
+    }

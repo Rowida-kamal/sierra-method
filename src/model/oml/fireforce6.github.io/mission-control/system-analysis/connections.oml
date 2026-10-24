@@ -2,7 +2,8 @@ description <https://fireforce6.github.io/mission-control/system-analysis/connec
 
 	extends <https://fireforce6.github.io/mission-control/system-analysis/components#> as components
 
-	uses <https://www.modelware.io/sierra/component#> as component
+		uses <http://purl.org/dc/elements/1.1/> as dc
+    uses <https://www.modelware.io/sierra/component#> as component
 
     ref instance components:FireSat [
         component:hasPort FireSat.Command_In
@@ -40,6 +41,55 @@ description <https://fireforce6.github.io/mission-control/system-analysis/connec
     instance CommandSignal : component:Signal []
     instance ElectricalPower : component:Energy []
 
+    @dc:description "Processed payload imagery passed to hotspot detection."
+    instance ImageDataSignal : component:Signal []
+    @dc:description "Candidate hotspot detections."
+    instance HotspotSignal : component:Signal []
+    @dc:description "Spacecraft position fix used for geolocation."
+    instance PositionSignal : component:Signal []
+    @dc:description "Hotspot detections with ground coordinates."
+    instance FireLocationSignal : component:Signal []
+    @dc:description "Formatted fire alert packet for Mission Control."
+    instance FireAlertSignal : component:Signal []
+
+    ref instance components:HotspotDetector [
+        component:hasPort HotspotDetector.Image_In
+        component:hasPort HotspotDetector.Hotspot_Out
+    ]
+    @dc:description "Receives processed imagery."
+    instance HotspotDetector.Image_In : component:Port [ component:direction "In" ]
+    @dc:description "Emits candidate hotspot detections."
+    instance HotspotDetector.Hotspot_Out : component:Port [ component:direction "Out" ]
+
+    ref instance components:FireGeolocator [
+        component:hasPort FireGeolocator.Hotspot_In
+        component:hasPort FireGeolocator.Position_In
+        component:hasPort FireGeolocator.Location_Out
+    ]
+    @dc:description "Receives candidate hotspots."
+    instance FireGeolocator.Hotspot_In : component:Port [ component:direction "In" ]
+    @dc:description "Receives the spacecraft position fix."
+    instance FireGeolocator.Position_In : component:Port [ component:direction "In" ]
+    @dc:description "Emits detections with ground coordinates."
+    instance FireGeolocator.Location_Out : component:Port [ component:direction "Out" ]
+
+    ref instance components:AlertPacketBuilder [
+        component:hasPort AlertPacketBuilder.Location_In
+        component:hasPort AlertPacketBuilder.Alert_Out
+    ]
+    @dc:description "Receives located detections."
+    instance AlertPacketBuilder.Location_In : component:Port [ component:direction "In" ]
+    @dc:description "Emits fire alert packets."
+    instance AlertPacketBuilder.Alert_Out : component:Port [ component:direction "Out" ]
+
+    ref instance components:ImageProcessor [ component:hasPort ImageProcessor.Image_Out ]
+    @dc:description "Emits processed payload imagery."
+    instance ImageProcessor.Image_Out : component:Port [ component:direction "Out" ]
+
+    ref instance components:GPSReceiver [ component:hasPort GPSReceiver.Position_Out ]
+    @dc:description "Emits the spacecraft position fix."
+    instance GPSReceiver.Position_Out : component:Port [ component:direction "Out" ]
+
     relation instance Conn_FireSatCmd_to_Platform : component:Connection [
         from FireSat.Command_In
         to Platform.Command_In
@@ -68,6 +118,40 @@ description <https://fireforce6.github.io/mission-control/system-analysis/connec
         from Platform.Data_Out
         to FireSat.Telemetry_Out
         component:transfers TelemetrySignal
+    ]
+    @dc:description "Passes processed imagery to hotspot detection."
+    relation instance Conn_ImageProcessor_to_HotspotDetector : component:Connection [
+        from ImageProcessor.Image_Out
+        to HotspotDetector.Image_In
+        component:transfers ImageDataSignal
+    ]
+
+    @dc:description "Passes candidate hotspots to geolocation."
+    relation instance Conn_HotspotDetector_to_FireGeolocator : component:Connection [
+        from HotspotDetector.Hotspot_Out
+        to FireGeolocator.Hotspot_In
+        component:transfers HotspotSignal
+    ]
+
+    @dc:description "Gives geolocation the spacecraft position fix."
+    relation instance Conn_GPSReceiver_to_FireGeolocator : component:Connection [
+        from GPSReceiver.Position_Out
+        to FireGeolocator.Position_In
+        component:transfers PositionSignal
+    ]
+
+    @dc:description "Passes located detections to the alert formatter."
+    relation instance Conn_FireGeolocator_to_AlertPacketBuilder : component:Connection [
+        from FireGeolocator.Location_Out
+        to AlertPacketBuilder.Location_In
+        component:transfers FireLocationSignal
+    ]
+
+    @dc:description "Sends fire alert packets to the platform for downlink."
+    relation instance Conn_AlertPacketBuilder_to_Platform : component:Connection [
+        from AlertPacketBuilder.Alert_Out
+        to Platform.Data_In
+        component:transfers FireAlertSignal
     ]
 
 }

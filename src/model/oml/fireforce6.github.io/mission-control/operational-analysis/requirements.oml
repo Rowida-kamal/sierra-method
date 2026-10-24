@@ -61,4 +61,22 @@ description <https://fireforce6.github.io/mission-control/operational-analysis/r
         base:category "L2"
         base:priority "Medium"
     ]
+    @dc:description "Detections must carry a position (traces Operator > OperatorNeeds > RealTimeAwareness > LiveFireUpdates)."
+    instance R8 : stakeholder:Requirement [
+        base:description "Geolocated Fire Detections"
+        base:expression "The system shall geolocate detected wildfire hotspots and include their position in every fire alert."
+        stakeholder:isStatedBy stakeholders:Operator
+        base:category "L2"
+        base:priority "High"
+    ]
+
+    @dc:description "Every confirmed detection must reach Mission Control (traces SafetyOfficer > SafetyOfficerNeeds > SafeDecisionSupport > CriticalAlertDisplay)."
+    instance R9 : stakeholder:Requirement [
+        base:description "Fire Alert Delivery"
+        base:expression "The system shall deliver a fire alert packet to Mission Control for each confirmed hotspot detection."
+        stakeholder:isStatedBy stakeholders:SafetyOfficer
+        base:category "L1"
+        base:priority "High"
+    ]
+
 }
